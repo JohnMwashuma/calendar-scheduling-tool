@@ -6,3 +6,9 @@
 .env.test.local
 .env.production.local
 .env
+.github/**
+.vscode/**
+.idea/**
+.pytest_cache/**
+.ruff_cache/**
+.mypy_cache/**
