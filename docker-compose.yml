@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    networks:
+      - app-network
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/yarn.lock:/app/yarn.lock
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:8000
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+
+networks:
+  app-network:
+    driver: bridge
