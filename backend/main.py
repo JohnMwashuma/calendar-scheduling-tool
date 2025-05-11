@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from starlette.middleware.sessions import SessionMiddleware
 from core.config import SECRET_KEY
-
+from api.endpoints import hubspot
 middleware = [
     Middleware(SessionMiddleware, secret_key=SECRET_KEY)
 ]
@@ -26,6 +26,7 @@ origins = [
 
 app.include_router(root.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
+app.include_router(hubspot.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
