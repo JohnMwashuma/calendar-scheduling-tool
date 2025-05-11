@@ -1,13 +1,23 @@
-import os
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from api.endpoints import root
-from core.database import engine
+from fastapi.middleware import Middleware
+from api.endpoints import root, auth
+from core.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-app = FastAPI()
+from contextlib import asynccontextmanager
+from starlette.middleware.sessions import SessionMiddleware
+from core.config import SECRET_KEY
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+middleware = [
+    Middleware(SessionMiddleware, secret_key=SECRET_KEY)
+]
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(lifespan=lifespan, middleware=middleware)
+
 
 origins = [
     "http://localhost:3000",
@@ -15,6 +25,7 @@ origins = [
 ]
 
 app.include_router(root.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,9 +34,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Serve index.html for all non-API routes (for React Router)
-@app.get("/{full_path:path}")
-def serve_react_app(full_path: str):
-    index_path = os.path.join("static", "index.html")
-    return FileResponse(index_path)
