@@ -1,8 +1,9 @@
 from datetime import datetime
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Time
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Time, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from core.database import Base
+import uuid
 
 class User(Base):
     __tablename__ = "users"
@@ -72,3 +73,19 @@ class SchedulingWindow(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", backref="scheduling_windows")
+
+class SchedulingLink(Base):
+    __tablename__ = "scheduling_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    link_id = Column(String, unique=True, index=True, default=lambda: str(uuid.uuid4()))
+    usage_limit = Column(Integer)
+    expiration_date = Column(DateTime)
+    meeting_length = Column(Integer)  # in minutes
+    advance_schedule_days = Column(Integer)
+    questions = Column(JSON)  # List of question strings
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", backref="scheduling_links")
