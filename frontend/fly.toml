@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for calendar-scheduling-tool on 2025-05-11T00:33:57+03:00
+# fly.toml app configuration file generated for calendar-scheduling-tool on 2025-05-11T14:15:44+03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -7,6 +7,7 @@ app = 'calendar-scheduling-tool'
 primary_region = 'fra'
 
 [build]
+  dockerfile = 'Dockerfile.prod'
 
 [http_service]
   internal_port = 3000
