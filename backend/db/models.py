@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String
+from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from core.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -10,3 +11,37 @@ class User(Base):
     google_id = Column(String, unique=True, index=True)
     email = Column(String, index=True)
     name = Column(String)
+
+    connected_google_accounts =\
+        relationship("ConnectedGoogleAccount", back_populates="user")
+    sessions = relationship("Session", back_populates="user")
+
+
+class ConnectedGoogleAccount(Base):
+    __tablename__ = "connected_google_accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    google_account_id = Column(String, unique=True, index=True)
+    access_token = Column(String)
+    refresh_token = Column(String)
+    email = Column(String, index=True)
+    name = Column(String)
+    picture = Column(String)
+    locale = Column(String)
+    verified = Column(Boolean)
+    hd = Column(String)
+
+    user = relationship("User", back_populates="connected_google_accounts")
+
+class Session(Base):
+    __tablename__ = "sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_token = Column(String, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime)
+    access_token = Column(String)
+
+    user = relationship("User", back_populates="sessions")
