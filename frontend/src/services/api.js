@@ -6,7 +6,9 @@ const instance = axios.create({
 
 const post = async (url, data) => {
   try {
-    const response = await instance.post(url, data);
+    const response = await instance.post(url, data, {
+      withCredentials: true,
+    });
     return response;
   } catch (error) {
     throw error;

@@ -28,6 +28,11 @@ const AuthCallbackLoadingPage = () => {
             withCredentials: true,
           });
           dispatch(loginSuccess(response.data.user));
+          const setSessionResponse = await api.post('/auth/set-session', {
+            user_id: response.data.user.id,
+          });
+          console.log(setSessionResponse);
+          document.cookie = `session_token=${setSessionResponse.data.session_token}; path=/; max-age=3600; domain=${process.env.REACT_APP_FRONTEND_DOMAIN};`;
           navigate('/home');
         } catch (err) {
           console.error('Error fetching user details:', err);

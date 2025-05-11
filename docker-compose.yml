@@ -20,6 +20,7 @@ services:
       - ./frontend/yarn.lock:/app/yarn.lock
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:8000/api/
+      - REACT_APP_FRONTEND_DOMAIN=localhost
     networks:
       - app-network
     depends_on:
