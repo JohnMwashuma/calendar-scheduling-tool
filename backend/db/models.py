@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Time
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from core.database import Base
@@ -59,3 +59,16 @@ class HubspotConnection(Base):
     portal_id = Column(String)
 
     user = relationship("User", backref="hubspot_connections")
+
+class SchedulingWindow(Base):
+    __tablename__ = "scheduling_windows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    weekday = Column(Integer, index=True)  # 0=Monday, 6=Sunday
+    start_time = Column(Time)
+    end_time = Column(Time)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", backref="scheduling_windows")
