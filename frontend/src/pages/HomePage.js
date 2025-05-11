@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, List, Typography, message, Menu } from 'antd';
+import { Layout, Button, List, Typography, message, Menu, Spin } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout as logoutAction } from '../store/actions/authActions';
 import GoogleLoginButton from '../components/Auth/GoogleLoginButton';
@@ -13,6 +13,7 @@ const HomePage = () => {
   const [connectedAccounts, setConnectedAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [activeTab, setActiveTab] = useState('accounts');
+  const [hubspotStatus, setHubspotStatus] = useState({ loading: false, connected: false, error: null });
 
   // Fetch connected Google accounts
   const fetchConnectedAccounts = async () => {
@@ -25,6 +26,21 @@ const HomePage = () => {
       setConnectedAccounts([]);
     } finally {
       setLoadingAccounts(false);
+    }
+  };
+
+  const fetchHubspotStatus = async () => {
+    setHubspotStatus({ loading: true, connected: false, error: null });
+    try {
+      const response = await api.get('/hubspot/connection/status', { withCredentials: true });
+      setHubspotStatus({
+        loading: false,
+        connected: response.data.connected,
+        error: null,
+        details: response.data.details || null,
+      });
+    } catch (error) {
+      setHubspotStatus({ loading: false, connected: false, error: 'Failed to check Hubspot connection' });
     }
   };
 
@@ -41,8 +57,11 @@ const HomePage = () => {
       message.error('Failed to connect Google account.');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
+    if (user && activeTab === 'hubspot') {
+      fetchHubspotStatus();
+    }
     // eslint-disable-next-line
-  }, [user]);
+  }, [user, activeTab]);
 
   const handleConnectGoogleAccount = () => {
     window.location.href = `${process.env.REACT_APP_API_BASE_URL}calendars/connect/new`;
@@ -63,6 +82,10 @@ const HomePage = () => {
     }
   };
 
+  const handleConnectHubspot = () => {
+    window.location.href = `${process.env.REACT_APP_API_BASE_URL}hubspot/connect/new`;
+  };
+
   return (
     <Layout className="layout" style={{ minHeight: '100vh' }}>
       <Layout.Header>
@@ -81,6 +104,7 @@ const HomePage = () => {
         >
           <Menu.Item key="accounts">Connected Accounts</Menu.Item>
           <Menu.Item key="events">Events</Menu.Item>
+          <Menu.Item key="hubspot">Hubspot</Menu.Item>
         </Menu>
       </Layout.Header>
       <Layout.Content style={{ padding: '50px' }}>
@@ -124,6 +148,41 @@ const HomePage = () => {
                 <>
                   <CalendarEventsPage />
                 </>
+              )}
+              {activeTab === 'hubspot' && (
+                <div>
+                  <Title level={4}>Hubspot Connection</Title>
+                  {hubspotStatus.loading ? (
+                    <Spin />
+                  ) : hubspotStatus.error ? (
+                    <div style={{ color: 'red' }}>{hubspotStatus.error}</div>
+                  ) : hubspotStatus.connected ? (
+                    <>
+                      <div style={{ color: 'green', margin: '24px 0' }}>
+                        Hubspot Connected!
+                      </div>
+                      <Button danger onClick={async () => {
+                        try {
+                          const response = await api.post('/hubspot/disconnect', {}, { withCredentials: true });
+                          if (response.data.success) {
+                            message.success('Hubspot disconnected');
+                            setHubspotStatus({ loading: false, connected: false, error: null });
+                          } else {
+                            message.error('Failed to disconnect Hubspot');
+                          }
+                        } catch (e) {
+                          message.error('Error disconnecting Hubspot');
+                        }
+                      }}>
+                        Disconnect Hubspot
+                      </Button>
+                    </>
+                  ) : (
+                    <Button type="primary" onClick={handleConnectHubspot}>
+                      Connect Hubspot
+                    </Button>
+                  )}
+                </div>
               )}
             </>
           ) : (
