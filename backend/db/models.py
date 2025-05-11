@@ -45,3 +45,17 @@ class Session(Base):
     access_token = Column(String)
 
     user = relationship("User", back_populates="sessions")
+
+class HubspotConnection(Base):
+    __tablename__ = "hubspot_connections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    access_token = Column(String)
+    refresh_token = Column(String)
+    expires_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    portal_id = Column(String)
+
+    user = relationship("User", backref="hubspot_connections")
