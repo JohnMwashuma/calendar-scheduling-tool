@@ -24,4 +24,26 @@ const get = async (url, config = {}) => {
   }
 };
 
-export { post, get };
+const put = async (url, data) => {
+  try {
+    const response = await instance.put(url, data, {
+      withCredentials: true,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const del = async (url) => {
+  try {
+    const response = await instance.delete(url, {
+      withCredentials: true,
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { post, get, put, del };
