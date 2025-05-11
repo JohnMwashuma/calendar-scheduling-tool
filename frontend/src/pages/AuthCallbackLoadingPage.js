@@ -18,7 +18,7 @@ const AuthCallbackLoadingPage = () => {
   useEffect(() => {
     if (accessToken && userId && !hasFetched) {
       setHasFetched(true);
-      document.cookie = `google_access_token=${accessToken}; path=/; max-age=3600; domain=localhost;`;
+      document.cookie = `google_access_token=${accessToken}; path=/; max-age=3600; domain=${process.env.REACT_APP_FRONTEND_DOMAIN};`;
       const fetchUserDetails = async () => {
         try {
           const response = await api.get('/auth/me', {
