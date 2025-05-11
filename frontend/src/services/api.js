@@ -13,9 +13,9 @@ const post = async (url, data) => {
   }
 };
 
-const get = async (url) => {
+const get = async (url, config = {}) => {
   try {
-    const response = await instance.get(url);
+    const response = await instance.get(url, config);
     return response;
   } catch (error) {
     throw error;
