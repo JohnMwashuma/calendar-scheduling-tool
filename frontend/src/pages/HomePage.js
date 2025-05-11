@@ -5,6 +5,7 @@ import { logout as logoutAction } from '../store/actions/authActions';
 import GoogleLoginButton from '../components/Auth/GoogleLoginButton';
 import * as api from '../services/api'; // Import your API service
 import CalendarEventsPage from './CalendarEventsPage';
+import SchedulingWindowsPage from './SchedulingWindowsPage';
 const { Title } = Typography;
 
 const HomePage = () => {
@@ -105,6 +106,7 @@ const HomePage = () => {
           <Menu.Item key="accounts">Connected Accounts</Menu.Item>
           <Menu.Item key="events">Events</Menu.Item>
           <Menu.Item key="hubspot">Hubspot</Menu.Item>
+          <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
         </Menu>
       </Layout.Header>
       <Layout.Content style={{ padding: '50px' }}>
@@ -183,6 +185,9 @@ const HomePage = () => {
                     </Button>
                   )}
                 </div>
+              )}
+              {activeTab === 'scheduling' && (
+                <SchedulingWindowsPage />
               )}
             </>
           ) : (
