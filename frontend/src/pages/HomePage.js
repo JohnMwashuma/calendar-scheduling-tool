@@ -9,6 +9,7 @@ const HomePage = () => {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
+    document.cookie = 'google_access_token=; path=/; max-age=0; domain=localhost;';
     dispatch(logout());
   };
 
