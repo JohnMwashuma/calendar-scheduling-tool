@@ -1,46 +1,43 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { loginWithGoogle } from '../../store/thunks/authThunks';
+import { loginFailure } from '../../store/actions/authActions';
 import { Result, Spin, message } from 'antd';
 
 const AuthCallbackHandler = () => {
   const [searchParams] = useSearchParams();
   const code = searchParams.get('code');
+  const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
     if (code) {
-      dispatch(loginWithGoogle(code))
-        .then(() => {
-          navigate('/home');
-        })
-        .catch((error) => {
-          console.error('Google login callback error:', error);
-          message.error('Google login failed');
-        });
-    } else if (searchParams.get('error')) {
-      console.error('Google login error:', searchParams.get('error'));
-      message.error('Google login failed');
+      // Redirect to the loading page to fetch user details
+      navigate('/auth/callback-loading');
+    } else if (error) {
+      console.error('Google login error:', error, errorDescription);
+      dispatch(loginFailure(errorDescription || 'Google authentication failed.'));
+      message.error(errorDescription || 'Google authentication failed.');
     }
-  }, [code, dispatch, navigate, searchParams]);
+  }, [code, error, errorDescription, dispatch, navigate]);
 
   if (code) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Spin size="large" tip="Authenticating with Google..." />
+        <Spin size="large" tip="Processing authentication..." />
       </div>
     );
   }
 
-  if (searchParams.get('error')) {
+  if (error) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Result
           status="error"
           title="Google Authentication Failed"
-          subTitle={searchParams.get('error_description') || 'Something went wrong during Google login.'}
+          subTitle={errorDescription || 'Something went wrong during Google login.'}
         />
       </div>
     );
@@ -48,7 +45,7 @@ const AuthCallbackHandler = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <p>Processing Google authentication...</p>
+      <Spin size="large" tip="Processing Google authentication..." />
     </div>
   );
 };
