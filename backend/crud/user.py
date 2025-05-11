@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from db.models import User
-from backend.schemas.user import UserCreate
+from schemas.user import UserCreate
 
 def get_user_by_google_id(db: Session, google_id: str):
     """
