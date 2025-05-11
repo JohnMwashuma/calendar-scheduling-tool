@@ -76,9 +76,14 @@ async def google_callback(
 
 @router.get("/auth/me")
 async def get_me(request: Request, db: Session = Depends(get_db)):
-    google_access_token = request.cookies.get("google_access_token")
-    if not google_access_token:
+    """
+    Get the current user's information.
+    """
+    authorization_header = request.headers.get("Authorization")
+    if not authorization_header or not authorization_header.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+    google_access_token = authorization_header.split("Bearer ")[1]
 
     async with AsyncClient() as client:
         userinfo_url = "https://www.googleapis.com/oauth2/v3/userinfo"
