@@ -1,14 +1,14 @@
+// frontend/src/store/index.js
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import thunk from 'redux-thunk';
 import authReducer from './reducers/authReducer';
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  // Add other reducers here as your application grows
 });
 
 const store = configureStore({
   reducer: rootReducer,
-  middleware: [thunk],
 });
 
 export default store;
