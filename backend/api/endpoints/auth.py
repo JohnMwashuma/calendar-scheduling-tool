@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from distutils.command import build
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Body
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -225,6 +226,42 @@ async def list_connected_calendars(
         db, user_id=current_user.id
     )
     return [ConnectedGoogleAccount.model_validate(account) for account in connected_accounts]
+
+@router.get("/events")
+async def list_calendar_events(request: Request, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    List calendar events for the logged-in user from all connected Google accounts, grouped by account.
+    """
+    connected_accounts = get_connected_accounts_by_user_id(db, user_id=current_user.id)
+    calendar_url = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+    result = []
+    async with httpx.AsyncClient() as client:
+        for account in connected_accounts:
+            headers = {"Authorization": f"Bearer {account.access_token}"}
+            page_token = None
+            all_events = []
+            while True:
+                params = {"maxResults": 100}
+                if page_token:
+                    params["pageToken"] = page_token
+                try:
+                    response = await client.get(calendar_url, headers=headers, params=params)
+                    response.raise_for_status()
+                    data = response.json()
+                    events = data.get("items", [])
+                    all_events.extend(events)
+                    page_token = data.get("nextPageToken")
+                    if not page_token:
+                        break
+                except Exception as e:
+                    print(f"Error fetching calendar events for account {account.google_account_id}: {e}")
+                    break
+            result.append({
+                "google_account_id": account.google_account_id,
+                "email": account.email,
+                "events": all_events
+            })
+    return result
 
 @router.post("/auth/logout")
 async def logout(response: Response, request: Request, db: Session = Depends(get_db)):

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, List, Typography, message } from 'antd';
+import { Layout, Button, List, Typography, message, Menu } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout as logoutAction } from '../store/actions/authActions';
 import GoogleLoginButton from '../components/Auth/GoogleLoginButton';
 import * as api from '../services/api'; // Import your API service
-
+import CalendarEventsPage from './CalendarEventsPage';
 const { Title } = Typography;
 
 const HomePage = () => {
@@ -12,6 +12,7 @@ const HomePage = () => {
   const dispatch = useDispatch();
   const [connectedAccounts, setConnectedAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [activeTab, setActiveTab] = useState('accounts');
 
   // Fetch connected Google accounts
   const fetchConnectedAccounts = async () => {
@@ -31,11 +32,10 @@ const HomePage = () => {
     if (user) {
       fetchConnectedAccounts();
     }
-    // Listen for query param status to refresh after connect
     if (window.location.search.includes('status=connect_success')) {
       fetchConnectedAccounts();
       message.success('Google account connected successfully!');
-      window.history.replaceState({}, document.title, window.location.pathname); // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
     if (window.location.search.includes('status=connect_error')) {
       message.error('Failed to connect Google account.');
@@ -44,7 +44,6 @@ const HomePage = () => {
     // eslint-disable-next-line
   }, [user]);
 
-  // Initiate OAuth flow for connecting another Google account
   const handleConnectGoogleAccount = () => {
     window.location.href = `${process.env.REACT_APP_API_BASE_URL}calendars/connect/new`;
   };
@@ -66,41 +65,67 @@ const HomePage = () => {
 
   return (
     <Layout className="layout" style={{ minHeight: '100vh' }}>
+      <Layout.Header>
+        <div style={{ float: 'right' }}>
+          {user && (
+            <Button onClick={handleLogout} type="primary">
+              Logout
+            </Button>
+          )}
+        </div>
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          selectedKeys={[activeTab]}
+          onClick={e => setActiveTab(e.key)}
+        >
+          <Menu.Item key="accounts">Connected Accounts</Menu.Item>
+          <Menu.Item key="events">Events</Menu.Item>
+        </Menu>
+      </Layout.Header>
       <Layout.Content style={{ padding: '50px' }}>
         <div className="site-layout-content" style={{ textAlign: 'center' }}>
           <Title>Welcome to the Scheduling Tool</Title>
           {user ? (
-            <div>
+            <>
               <p>Logged in as: {user.name} ({user.email})</p>
-              <Button onClick={handleLogout} style={{ marginBottom: 24 }}>Logout</Button>
-              <div style={{ margin: '24px 0' }}>
-                <Button type="primary" onClick={handleConnectGoogleAccount}>
-                  Connect Another Google Account
-                </Button>
-              </div>
-              <Title level={4}>Connected Google Accounts</Title>
-              <List
-                bordered
-                loading={loadingAccounts}
-                dataSource={connectedAccounts}
-                renderItem={item => (
-                  <>
-                    <List.Item>
-                      <span>
-                        <b>Google Account ID:</b> {item.google_account_id}
-                    </span>
-                  </List.Item>
-                    <List.Item>
-                      <span>
-                        <b>Email:</b> {item.email}
-                      </span>
-                    </List.Item>
-                  </>
-                )}
-                locale={{ emptyText: 'No connected Google accounts.' }}
-                style={{ maxWidth: 600, margin: '0 auto' }}
-              />
-            </div>
+              {activeTab === 'accounts' && (
+                <>
+                  <div style={{ margin: '24px 0' }}>
+                    <Button type="primary" onClick={handleConnectGoogleAccount}>
+                      Connect Another Google Account
+                    </Button>
+                  </div>
+                  <Title level={4}>Connected Google Accounts</Title>
+                  <List
+                    bordered
+                    loading={loadingAccounts}
+                    dataSource={connectedAccounts}
+                    renderItem={item => (
+                      <>
+                        <List.Item>
+                          <span>
+                            <b>Google Account ID:</b> {item.google_account_id}
+                          </span>
+                        </List.Item>
+                        <List.Item>
+                          <span>
+                            <b>Email:</b> {item.email}
+                          </span>
+                        </List.Item>
+                      </>
+                    )}
+                    locale={{ emptyText: 'No connected Google accounts.' }}
+                    style={{ maxWidth: 600, margin: '0 auto' }}
+                  />
+                </>
+              )}
+              {activeTab === 'events' && (
+                <>
+                  <CalendarEventsPage />
+                </>
+              )}
+            </>
           ) : (
             <div>
               <p>Please log in to continue.</p>
