@@ -237,7 +237,14 @@ async def list_calendar_events(request: Request, current_user: User = Depends(ge
     result = []
     async with httpx.AsyncClient() as client:
         for account in connected_accounts:
-            headers = {"Authorization": f"Bearer {account.access_token}"}
+            if account.email == current_user.email:
+                google_access_token = request.cookies.get("google_access_token")
+                if google_access_token:
+                    headers = {"Authorization": f"Bearer {google_access_token}"}
+                else:
+                    headers = {"Authorization": f"Bearer {account.access_token}"}
+            else:
+                headers = {"Authorization": f"Bearer {account.access_token}"}
             page_token = None
             all_events = []
             while True:
