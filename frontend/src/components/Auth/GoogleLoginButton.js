@@ -3,7 +3,7 @@ import { Button } from 'antd';
 
 const GoogleLoginButton = () => {
   const handleLogin = () => {
-    window.location.href = `${process.env.REACT_APP_API_BASE_URL}/auth/google/login`;
+    window.location.href = `${process.env.REACT_APP_API_BASE_URL}auth/google/login`;
   };
 
   return (
