@@ -9,7 +9,8 @@ from schemas.scheduling_link import SchedulingLinkCreate, SchedulingLinkOut
 import uuid
 from schemas.meeting import MeetingCreate
 from crud.meeting import create_meeting, is_time_slot_available
-from db.models import SchedulingLink, Meeting
+from db.models import SchedulingLink, User
+from core.email_utils import send_email
 
 router = APIRouter()
 
@@ -76,5 +77,20 @@ async def book_meeting(
     if link.usage_limit is not None:
         link.usage_limit -= 1
         db.commit()
+
+    # Send email to advisor
+    advisor = db.query(User).filter_by(id=link.user_id).first()
+    if advisor:
+        subject = f"New Meeting Booking: {link.link_id}"
+        answers_str = "\n".join(
+            f"{q}: {a}" for q, a in zip(link.questions or [], data.answers or [])
+        )
+        body = (
+            f"You have a new meeting booking!\n"
+            f"Client Email: {data.email}\n"
+            f"Scheduled Time: {start_time.strftime('%Y-%m-%d %H:%M')}\n"
+            f"Answers to Questions:\n{answers_str}"
+        )
+        send_email(advisor.email, subject, body)
 
     return {"success": True, "message": "Booking confirmed."}
