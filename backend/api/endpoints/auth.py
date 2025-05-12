@@ -239,6 +239,9 @@ async def list_calendar_events(request: Request, current_user: User = Depends(ge
         for account in connected_accounts:
             if account.email == current_user.email:
                 google_access_token = request.cookies.get("google_access_token")
+                if not google_access_token:
+                    # Try to get from custom header if not in cookies
+                    google_access_token = request.headers.get("X-Google-Access-Token")
                 if google_access_token:
                     headers = {"Authorization": f"Bearer {google_access_token}"}
                 else:
@@ -273,6 +276,8 @@ async def list_calendar_events(request: Request, current_user: User = Depends(ge
 @router.post("/auth/logout")
 async def logout(response: Response, request: Request, db: Session = Depends(get_db)):
     session_token = request.cookies.get("session_token")
+    if not session_token:
+        session_token = request.headers.get("X-Session-Token")
     if session_token:
         delete_session(db, session_token=session_token)
         response.delete_cookie(key="session_token", path="/")
@@ -292,6 +297,8 @@ async def set_session_cookie(
     db: Session = Depends(get_db)
 ):
     access_token = request.cookies.get("google_access_token")
+    if not access_token:
+        access_token = request.headers.get("X-Google-Access-Token")
     session_token = uuid.uuid4().hex
     expires_at = datetime.utcnow() + timedelta(hours=24)
     create_session(

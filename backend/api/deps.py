@@ -8,6 +8,9 @@ from datetime import datetime
 async def get_current_user(request: Request, db: Session = Depends(get_db)):
     session_token = request.cookies.get("session_token")
     if not session_token:
+        # Try to get from custom header if not in cookies
+        session_token = request.headers.get("X-Session-Token")
+    if not session_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     session = get_session_by_token(db, session_token=session_token)
