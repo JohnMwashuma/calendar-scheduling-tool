@@ -47,4 +47,5 @@ async def public_schedule(
         "advisor_name": advisor_name,
         "meeting_length": link.meeting_length,
         "available_slots": available_slots,
+        "questions": link.questions,
     } 

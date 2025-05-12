@@ -89,3 +89,19 @@ class SchedulingLink(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", backref="scheduling_links")
+
+class Meeting(Base):
+    __tablename__ = "meetings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    advisor_id = Column(Integer, ForeignKey("users.id"))
+    link_id = Column(String, ForeignKey("scheduling_links.link_id"))
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    client_email = Column(String, nullable=False)
+    client_linkedin = Column(String)
+    answers = Column(JSON)  # List of answers to custom questions
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    advisor = relationship("User", backref="meetings")
+    scheduling_link = relationship("SchedulingLink", backref="meetings")
