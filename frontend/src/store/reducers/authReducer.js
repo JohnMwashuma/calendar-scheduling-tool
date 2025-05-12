@@ -4,7 +4,7 @@ import { LOGIN_REQUEST, LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT } from '../actions/
 const initialState = {
   isLoggedIn: false,
   user: null,
-  loading: false,
+  loggingIn: false,
   error: null,
 };
 
@@ -13,7 +13,7 @@ const authReducer = (state = initialState, action) => {
     case LOGIN_REQUEST:
       return {
         ...state,
-        loading: true,
+        loggingIn: true,
         error: null,
       };
     case LOGIN_SUCCESS:
@@ -21,7 +21,7 @@ const authReducer = (state = initialState, action) => {
         ...state,
         isLoggedIn: true,
         user: action.payload,
-        loading: false,
+        loggingIn: false,
         error: null,
       };
     case LOGIN_FAILURE:
@@ -29,7 +29,7 @@ const authReducer = (state = initialState, action) => {
         ...state,
         isLoggedIn: false,
         user: null,
-        loading: false,
+        loggingIn: false,
         error: action.payload,
       };
     case LOGOUT:
