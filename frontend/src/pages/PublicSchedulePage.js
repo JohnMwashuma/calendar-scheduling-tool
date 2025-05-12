@@ -69,6 +69,7 @@ const PublicSchedulePage = () => {
         answers: questions.map((q, i) => values[`question_${i}`] || ''),
       };
       const response = await api.post(`/schedule/${link_id}/book`, payload);
+      console.log(response);
       if (response.data.success) {
         setSuccess(true);
         message.success('Booking confirmed!');
@@ -76,7 +77,8 @@ const PublicSchedulePage = () => {
         message.error(response.data.message || 'Booking failed.');
       }
     } catch (e) {
-      message.error(e?.response?.data?.detail || 'Booking failed.');
+      console.log(e);
+      setError(e?.response?.data?.detail || 'Booking failed.');
     } finally {
       setLoading(false);
     }
@@ -88,12 +90,13 @@ const PublicSchedulePage = () => {
         <Title level={2} style={{ textAlign: 'center', marginBottom: 16 }}>Book a Meeting</Title>
         {loading ? (
           <Spin style={{ display: 'block', margin: '40px auto' }} />
-        ) : error ? (
-          <Alert type="error" message={error} showIcon style={{ margin: '32px 0' }} />
         ) : success ? (
-          <Alert type="success" message="Booking confirmed! Check your email for details." showIcon style={{ margin: '32px 0' }} />
+          <Alert type="success" message="Booking confirmed!" showIcon style={{ margin: '32px 0' }} />
         ) : (
           <>
+            {error && (
+              <Alert type="error" message={error} showIcon style={{ margin: '32px 0' }} />
+            )}
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <Text strong>Advisor:</Text> {advisor}<br />
               <Text strong>Meeting Length:</Text> {meetingLength} minutes

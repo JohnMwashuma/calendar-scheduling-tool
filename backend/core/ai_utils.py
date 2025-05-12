@@ -1,12 +1,17 @@
-import os
-import openai
+from openai import OpenAI
 import logging
 from typing import Optional, Dict, Any
+from core.config import OPENAI_API_KEY
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=OPENAI_API_KEY,
+)
+
+def strip_html(text: str) -> str:
+    return BeautifulSoup(text, "html.parser").get_text(separator=" ", strip=True)
 
 async def generate_linkedin_summary(profile_data: Dict[str, Any]) -> Optional[str]:
     """
@@ -72,9 +77,8 @@ async def generate_linkedin_summary(profile_data: Dict[str, Any]) -> Optional[st
             Focus on their expertise, experience level, industry background, and what makes their 
             background relevant. Keep the summary concise but informative (max 200 words).
             """
-            
-        # Call OpenAI API
-        response = await openai.ChatCompletion.acreate(
+
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a professional assistant that summarizes LinkedIn profiles concisely and accurately."},
@@ -83,10 +87,45 @@ async def generate_linkedin_summary(profile_data: Dict[str, Any]) -> Optional[st
             max_tokens=500,
             temperature=0.7
         )
-        
         summary = response.choices[0].message.content.strip()
         return summary
         
     except Exception as e:
         logger.error(f"Error generating LinkedIn summary: {e}")
+        return None 
+
+async def augment_answers_with_notes(answers, notes) -> Optional[str]:
+    """
+    Use OpenAI to augment client answers with relevant context from previous notes.
+    Args:
+        answers: List of client answers (strings)
+        notes: List of previous notes (strings)
+    Returns:
+        Augmented notes string, or None if generation fails
+    """
+    if not answers or not notes:
+        return None
+    # Clean HTML from notes
+    cleaned_notes = [strip_html(note) for note in notes]
+    print(f"Cleaned notes: {cleaned_notes}")
+    try:
+        prompt = (
+            "Given the following client answers and previous notes, augment the answers with relevant context from the notes. "
+            "If a note provides context for an answer, add a 'Context:' line after the answer.\n\n"
+            f"Client Answers:\n" + "\n".join(answers) + "\n\n" +
+            f"Previous Notes:\n" + "\n".join(cleaned_notes) + "\n\n" +
+            "Augmented Notes:"
+        )
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that augments client answers with relevant context from previous notes."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.5
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Error generating augmented notes: {e}")
         return None 

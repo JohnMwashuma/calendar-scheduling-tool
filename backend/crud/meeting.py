@@ -1,7 +1,7 @@
 from db.models import Meeting
 from sqlalchemy.orm import Session
 
-def create_meeting(db: Session, advisor_id: int, link_id: str, start_time, end_time, client_email, client_linkedin, answers, linkedin_summary=None):
+def create_meeting(db: Session, advisor_id: int, link_id: str, start_time, end_time, client_email, client_linkedin, answers, linkedin_summary=None, augmented_notes=None):
     meeting = Meeting(
         advisor_id=advisor_id,
         link_id=link_id,
@@ -10,7 +10,8 @@ def create_meeting(db: Session, advisor_id: int, link_id: str, start_time, end_t
         client_email=client_email,
         client_linkedin=client_linkedin,
         answers=answers,
-        linkedin_summary=linkedin_summary
+        linkedin_summary=linkedin_summary,
+        augmented_notes=augmented_notes
     )
     db.add(meeting)
     db.commit()

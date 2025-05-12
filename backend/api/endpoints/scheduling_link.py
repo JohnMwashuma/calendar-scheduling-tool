@@ -11,9 +11,9 @@ from schemas.meeting import MeetingCreate, MeetingOut
 from crud.meeting import create_meeting, is_time_slot_available, get_meetings_by_advisor_id, get_meeting_by_id
 from db.models import SchedulingLink, User, HubspotConnection
 from core.email_utils import send_email
-from core.hubspot_utils import get_hubspot_contact_by_email
+from core.hubspot_utils import get_hubspot_contact_by_email_with_notes
 from core.linkedin_utils import is_valid_linkedin_url, scrape_linkedin_profile, extract_linkedin_username
-from core.ai_utils import generate_linkedin_summary
+from core.ai_utils import generate_linkedin_summary, augment_answers_with_notes
 from core.config import LINKEDIN_SCRAPING_ENABLED
 router = APIRouter()
 
@@ -77,49 +77,41 @@ async def book_meeting(
     linkedin_info_str = ""
     contact_info_str = ""
     
-    # Try to enrich with HubSpot contact details first
-    hubspot_conn =\
-        db.query(HubspotConnection).filter_by(user_id=link.user_id).first()
+    # Try to enrich with HubSpot contact details and notes
+    hubspot_conn = db.query(HubspotConnection).filter_by(user_id=link.user_id).first()
     contact_details = None
+    contact_notes = []
     if hubspot_conn and hubspot_conn.access_token:
-        contact_details =\
-            get_hubspot_contact_by_email(data.email, hubspot_conn.access_token)
-    
-    if contact_details:
-        contact_info_str =\
-            "\n".join(f"{k}: {v}" for k, v in contact_details.items() if v)
+        contact_details = get_hubspot_contact_by_email_with_notes(data.email, hubspot_conn.access_token)
+        if contact_details:
+            contact_info_str = "\n".join(f"{k}: {v}" for k, v in contact_details.items() if v and k != "notes")
+            contact_notes = [n["content"] for n in contact_details.get("notes", []) if n.get("content")]
     
     # Process LinkedIn data if available and no detailed contact
-    # info from HubSpot
     normalized_linkedin = data.linkedin
-    # If LinkedIn scraping is enabled, scrape LinkedIn profile data
-    # Currently disabled due to linkedin.com blocking scraping
     if data.linkedin and LINKEDIN_SCRAPING_ENABLED:
-        # Handle if it's just a username (not a URL)
-        if not data.linkedin.startswith(
-            ('http://', 'https://')) and not is_valid_linkedin_url(
+        if not data.linkedin.startswith((
+            'http://', 'https://')) and not is_valid_linkedin_url(
                 data.linkedin):
-            # Convert username to URL format
-            normalized_linkedin =\
-                f"https://www.linkedin.com/in/{data.linkedin}"
-        
-        # If not found in HubSpot (or limited info), proceed with
-        # LinkedIn scraping
-        # 3 is an arbitrary threshold for "limited info"
+            normalized_linkedin = f"https://www.linkedin.com/in/{data.linkedin}"
         if not contact_details or len(contact_details) < 3:
             if is_valid_linkedin_url(normalized_linkedin):
-                # Scrape LinkedIn profile data
-                profile_data =\
-                    await scrape_linkedin_profile(normalized_linkedin)
-                
+                profile_data = await scrape_linkedin_profile(normalized_linkedin)
                 if profile_data:
-                    # Generate AI summary
-                    linkedin_summary =\
-                        await generate_linkedin_summary(profile_data)
-                    
+                    linkedin_summary = await generate_linkedin_summary(profile_data)
                     if linkedin_summary:
-                        linkedin_info_str =\
-                            f"\n\nLinkedIn Profile Summary:\n{linkedin_summary}"
+                        linkedin_info_str = f"\n\nLinkedIn Profile Summary:\n{linkedin_summary}"
+
+    # Choose context for augmentation: HubSpot notes if available, else LinkedIn summary
+    context_for_augmentation = None
+    if contact_notes:
+        context_for_augmentation = contact_notes
+    elif linkedin_summary:
+        context_for_augmentation = [linkedin_summary]
+
+    augmented_notes = None
+    if data.answers and context_for_augmentation:
+        augmented_notes = await augment_answers_with_notes(data.answers, context_for_augmentation)
 
     # Create meeting
     create_meeting(
@@ -131,7 +123,8 @@ async def book_meeting(
         client_email=data.email,
         client_linkedin=normalized_linkedin,
         answers=data.answers,
-        linkedin_summary=linkedin_summary
+        linkedin_summary=linkedin_summary,
+        augmented_notes=augmented_notes
     )
 
     # Decrement usage limit
@@ -143,7 +136,7 @@ async def book_meeting(
     advisor = db.query(User).filter_by(id=link.user_id).first()
     
     if advisor:
-        subject = f"New Meeting Booking: {link.link_id}"
+        subject = f"New Meeting Booking from: {data.email}"
         answers_str = "\n".join(
             f"{q}: {a}" for q, a in zip(link.questions or [], data.answers or [])
         )
@@ -153,12 +146,15 @@ async def book_meeting(
             f"Scheduled Time: {start_time.strftime('%Y-%m-%d %H:%M')}\n"
             f"Answers to Questions:\n{answers_str}"
         )
+
         if contact_info_str:
             body += f"\n\nHubSpot Contact Details:\n{contact_info_str}"
-        
+
+        if augmented_notes:
+            body += f"\n\nAugmented Notes:\n{augmented_notes}"
+
         if linkedin_info_str:
             body += linkedin_info_str
-            
         send_email(advisor.email, subject, body)
 
     return {"success": True, "message": "Booking confirmed."}

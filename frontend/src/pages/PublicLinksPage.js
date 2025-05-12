@@ -149,22 +149,12 @@ const PublicLinksPage = () => {
                                   {link.usage_limit !== undefined && (
                                     <Tag color="gold">Limit: {link.usage_limit}</Tag>
                                   )}
-                                </Space>
-                                {link.expiration_date && (
+                                  {link.expiration_date && (
                                   <Text type="secondary" style={{ fontSize: 13 }}>
                                     Expires: {dayjs(link.expiration_date).format('YYYY-MM-DD HH:mm')}
                                   </Text>
                                 )}
-                                {link.questions && link.questions.length > 0 && (
-                                  <div style={{ marginTop: 8 }}>
-                                    <Text strong>Questions:</Text>
-                                    <ul style={{ margin: 0, paddingLeft: 20 }}>
-                                      {link.questions.map((q, i) => (
-                                        <li key={i} style={{ fontSize: 13 }}>{q}</li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
+                                </Space>
                                 <div style={{ marginTop: 8 }}>
                                   <Tooltip title="Copy link">
                                     <Button
