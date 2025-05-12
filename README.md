@@ -39,8 +39,6 @@ A Calendly-like scheduling tool for advisors to meet with their clients, featuri
 11. **View Meeting Details in the App**  
     Advisors can review all meeting details, client responses, and AI-augmented notes in the app.
 
----
-
 ## Tech Stack
 
 - **Frontend:** React (Ant Design, dayjs, Redux, Redux Thunk, Redux Toolkit)
@@ -153,3 +151,45 @@ A Calendly-like scheduling tool for advisors to meet with their clients, featuri
 ## Contributing
 
 PRs and issues are welcome!
+
+---
+## Screenshots
+
+### Landing Page
+![Landing Page](images/landing%20page.png)
+
+### Adivisors Connected Google Accounts
+![Connected Google Accounts](images/connected_accounts.png)
+
+### Advisors Calendar Events
+![Calendar Events](images/calendar%20events.png)
+
+### Connected to Hubspot
+![Connected to Hubspot](images/connected%20to%20hubspot.png)
+
+### Hubspot CRM Screen
+![Hubspot CRM Screen](images/hubspot%20crm%20screen.png)
+
+### Scheduling Windows
+![Scheduling Windows](images/scheduling%20windows.png)
+
+### Scheduling Links
+![Scheduling Links](images/scheduling%20links.png)
+
+### Public View with Schedules
+![Public View with Schedules](images/public%20view%20with%20schedules.png)
+
+### Booking A Meeting Page
+![Booking a meeting page](images/book%20a%20meeting.png)
+
+### Booking A Meeting Form
+![Booking Form](images/booking%20form.png)
+
+### Advisors Meetings
+![Meetings Set](images/meetings%20set.png)
+
+### Meeting Content with Augmented Notes
+![Meeting Content with Augmented Notes](images/meeting%20content%20with%20augumented%20notes.png)
+
+### Meeting Email with Context from Hubspot Augmented by OpenAI
+![Meeting Email with Context from Hubspot Augmented by OpenAI](images/meeting%20email%20with%20context%20from%20hubspot%20augumented%20by%20open%20ai.png)
