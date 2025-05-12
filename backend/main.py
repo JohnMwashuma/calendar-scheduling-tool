@@ -11,6 +11,7 @@ from api.endpoints import (
     scheduling_window,
     scheduling_link,
     public_schedule,
+    public_links,
 )
 
 middleware = [
@@ -36,6 +37,7 @@ app.include_router(hubspot.router, prefix="/api")
 app.include_router(scheduling_window.router, prefix="/api")
 app.include_router(scheduling_link.router, prefix="/api")
 app.include_router(public_schedule.router, prefix="/api")
+app.include_router(public_links.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

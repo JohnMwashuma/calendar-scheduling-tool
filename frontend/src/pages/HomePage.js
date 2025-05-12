@@ -7,6 +7,7 @@ import * as api from '../services/api';
 import CalendarEventsPage from './CalendarEventsPage';
 import SchedulingWindowsPage from './SchedulingWindowsPage';
 import SchedulingLinksPage from './SchedulingLinksPage';
+import PublicLinksPage from './PublicLinksPage';
 const { Title } = Typography;
 
 const HomePage = () => {
@@ -91,10 +92,12 @@ const HomePage = () => {
     <Layout className="layout" style={{ minHeight: '100vh' }}>
       <Layout.Header>
         <div style={{ float: 'right' }}>
-          {user && (
+          {user ? (
             <Button onClick={handleLogout} type="primary">
               Logout
             </Button>
+          ) : (
+            <GoogleLoginButton />
           )}
         </div>
         <Menu
@@ -103,16 +106,22 @@ const HomePage = () => {
           selectedKeys={[activeTab]}
           onClick={e => setActiveTab(e.key)}
         >
-          <Menu.Item key="accounts">Connected Accounts</Menu.Item>
-          <Menu.Item key="events">Events</Menu.Item>
-          <Menu.Item key="hubspot">Hubspot</Menu.Item>
-          <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
-          <Menu.Item key="links">Scheduling Links</Menu.Item>
+          {user ? (
+            <>
+              <Menu.Item key="accounts">Connected Accounts</Menu.Item>
+              <Menu.Item key="events">Events</Menu.Item>
+              <Menu.Item key="hubspot">Hubspot</Menu.Item>
+              <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
+              <Menu.Item key="links">Scheduling Links</Menu.Item>
+            </>
+          ) : (
+            <Menu.Item key="public-links">Advisors Scheduling Links</Menu.Item>
+          )}
         </Menu>
       </Layout.Header>
       <Layout.Content style={{ padding: '50px' }}>
         <div className="site-layout-content" style={{ textAlign: 'center' }}>
-          <Title>Welcome to the Scheduling Tool</Title>
+          <Title>Welcome to the Advisor Scheduling Tool</Title>
           {user ? (
             <>
               <p>Logged in as: {user.name} ({user.email})</p>
@@ -195,10 +204,7 @@ const HomePage = () => {
               )}
             </>
           ) : (
-            <div>
-              <p>Please log in to continue.</p>
-              <GoogleLoginButton />
-            </div>
+            <PublicLinksPage />
           )}
         </div>
       </Layout.Content>
