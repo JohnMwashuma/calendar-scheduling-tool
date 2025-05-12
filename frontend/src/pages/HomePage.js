@@ -8,6 +8,7 @@ import CalendarEventsPage from './CalendarEventsPage';
 import SchedulingWindowsPage from './SchedulingWindowsPage';
 import SchedulingLinksPage from './SchedulingLinksPage';
 import PublicLinksPage from './PublicLinksPage';
+import MeetingsPage from './MeetingsPage';
 const { Title } = Typography;
 
 const HomePage = () => {
@@ -113,6 +114,7 @@ const HomePage = () => {
               <Menu.Item key="hubspot">Hubspot</Menu.Item>
               <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
               <Menu.Item key="links">Scheduling Links</Menu.Item>
+              <Menu.Item key="meetings">Meetings</Menu.Item>
             </>
           ) : (
             <Menu.Item key="public-links">Advisors Scheduling Links</Menu.Item>
@@ -201,6 +203,9 @@ const HomePage = () => {
               )}
               {activeTab === 'links' && (
                 <SchedulingLinksPage />
+              )}
+              {activeTab === 'meetings' && (
+                <MeetingsPage />
               )}
             </>
           ) : (

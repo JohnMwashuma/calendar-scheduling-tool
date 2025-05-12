@@ -7,6 +7,8 @@ class MeetingCreate(BaseModel):
     email: EmailStr
     linkedin: Optional[str]
     answers: List[Any]
+    augmented_notes: Optional[str] = None
+    linkedin_summary: Optional[str] = None
 
 class MeetingOut(BaseModel):
     id: int
@@ -18,3 +20,5 @@ class MeetingOut(BaseModel):
     client_linkedin: Optional[str]
     answers: List[Any]
     created_at: datetime
+    augmented_notes: Optional[str] = None
+    linkedin_summary: Optional[str] = None

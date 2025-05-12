@@ -102,6 +102,8 @@ class Meeting(Base):
     client_linkedin = Column(String)
     answers = Column(JSON)  # List of answers to custom questions
     created_at = Column(DateTime, default=datetime.utcnow)
+    augmented_notes = Column(String)
+    linkedin_summary = Column(String)
 
     advisor = relationship("User", backref="meetings")
     scheduling_link = relationship("SchedulingLink", backref="meetings")

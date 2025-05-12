@@ -24,3 +24,9 @@ def is_time_slot_available(db: Session, link_id: str, start_time, end_time):
         Meeting.start_time < end_time,
         Meeting.end_time > start_time
     ).first()
+
+def get_meetings_by_advisor_id(db: Session, advisor_id: int):
+    return db.query(Meeting).filter(Meeting.advisor_id == advisor_id).order_by(Meeting.start_time.desc()).all()
+
+def get_meeting_by_id(db: Session, meeting_id: int):
+    return db.query(Meeting).filter(Meeting.id == meeting_id).first()
