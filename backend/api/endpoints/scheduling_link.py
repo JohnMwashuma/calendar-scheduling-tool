@@ -7,8 +7,8 @@ from api.deps import get_current_user
 from crud.scheduling_link import create_scheduling_link, get_scheduling_links_by_user_id
 from schemas.scheduling_link import SchedulingLinkCreate, SchedulingLinkOut
 import uuid
-from schemas.meeting import MeetingCreate
-from crud.meeting import create_meeting, is_time_slot_available
+from schemas.meeting import MeetingCreate, MeetingOut
+from crud.meeting import create_meeting, is_time_slot_available, get_meetings_by_advisor_id, get_meeting_by_id
 from db.models import SchedulingLink, User, HubspotConnection
 from core.email_utils import send_email
 from core.hubspot_utils import get_hubspot_contact_by_email
@@ -106,3 +106,22 @@ async def book_meeting(
         send_email(advisor.email, subject, body)
 
     return {"success": True, "message": "Booking confirmed."}
+
+@router.get("/meetings", response_model=List[MeetingOut])
+async def list_meetings(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    meetings = get_meetings_by_advisor_id(db, current_user.id)
+    return meetings
+
+@router.get("/meetings/{meeting_id}", response_model=MeetingOut)
+async def get_meeting_detail(
+    meeting_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    meeting = get_meeting_by_id(db, meeting_id)
+    if not meeting or meeting.advisor_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Meeting not found.")
+    return meeting
