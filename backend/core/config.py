@@ -18,3 +18,4 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 LINKEDIN_SCRAPING_ENABLED = os.getenv("LINKEDIN_SCRAPING_ENABLED", "false").lower() == "true"
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://calendar-scheduling-tool.fly.dev").split(",")
