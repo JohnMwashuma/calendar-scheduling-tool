@@ -5,7 +5,7 @@ from core.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from starlette.middleware.sessions import SessionMiddleware
-from core.config import SECRET_KEY
+from core.config import ALLOWED_ORIGINS, SECRET_KEY
 from api.endpoints import (
     hubspot,
     scheduling_window,
@@ -26,10 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, middleware=middleware)
 
 
-origins = [
-    "http://localhost:3000",
-    "https://calendar-scheduling-tool.fly.dev",
-]
+origins = ALLOWED_ORIGINS
 
 app.include_router(root.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
