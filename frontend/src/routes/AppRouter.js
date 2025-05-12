@@ -4,6 +4,7 @@ import HomePage from '../pages/HomePage';
 import AuthCallbackHandler from '../components/Auth/AuthCallbackHandler';
 import AuthCallbackLoadingPage from '../pages/AuthCallbackLoadingPage';
 import CalendarEventsPage from '../pages/CalendarEventsPage';
+import PublicSchedulePage from '../pages/PublicSchedulePage';
 const AppRouter = () => {
   return (
     <Routes>
@@ -12,6 +13,7 @@ const AppRouter = () => {
       <Route path="/auth/callback-loading" element={<AuthCallbackLoadingPage />} />
       <Route path="/calendar-events" element={<CalendarEventsPage />} />
       <Route path="/" element={<HomePage />} />
+      <Route path="/book/:link_id" element={<PublicSchedulePage />} />
     </Routes>
   );
 };
