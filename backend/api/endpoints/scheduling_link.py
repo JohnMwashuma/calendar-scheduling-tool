@@ -9,8 +9,9 @@ from schemas.scheduling_link import SchedulingLinkCreate, SchedulingLinkOut
 import uuid
 from schemas.meeting import MeetingCreate
 from crud.meeting import create_meeting, is_time_slot_available
-from db.models import SchedulingLink, User
+from db.models import SchedulingLink, User, HubspotConnection
 from core.email_utils import send_email
+from core.hubspot_utils import get_hubspot_contact_by_email
 
 router = APIRouter()
 
@@ -80,6 +81,15 @@ async def book_meeting(
 
     # Send email to advisor
     advisor = db.query(User).filter_by(id=link.user_id).first()
+    contact_info_str = ""
+    # Try to enrich with HubSpot contact details
+    hubspot_conn = db.query(HubspotConnection).filter_by(user_id=link.user_id).first()
+    contact_details = None
+    if hubspot_conn and hubspot_conn.access_token:
+        contact_details = get_hubspot_contact_by_email(data.email, hubspot_conn.access_token)
+    if contact_details:
+        contact_info_str = "\n".join(f"{k}: {v}" for k, v in contact_details.items() if v)
+
     if advisor:
         subject = f"New Meeting Booking: {link.link_id}"
         answers_str = "\n".join(
@@ -91,6 +101,8 @@ async def book_meeting(
             f"Scheduled Time: {start_time.strftime('%Y-%m-%d %H:%M')}\n"
             f"Answers to Questions:\n{answers_str}"
         )
+        if contact_info_str:
+            body += f"\n\nHubSpot Contact Details:\n{contact_info_str}"
         send_email(advisor.email, subject, body)
 
     return {"success": True, "message": "Booking confirmed."}
