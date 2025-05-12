@@ -13,6 +13,7 @@ const { Title } = Typography;
 
 const HomePage = () => {
   const user = useSelector((state) => state.auth.user);
+  const loggingIn = useSelector((state) => state.auth.loggingIn);
   const dispatch = useDispatch();
   const [connectedAccounts, setConnectedAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
@@ -90,130 +91,136 @@ const HomePage = () => {
   };
 
   return (
-    <Layout className="layout" style={{ minHeight: '100vh' }}>
-      <Layout.Header>
-        <div style={{ float: 'right' }}>
-          {user ? (
-            <Button onClick={handleLogout} type="primary">
-              Logout
-            </Button>
-          ) : (
-            <GoogleLoginButton />
-          )}
-        </div>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[activeTab]}
-          onClick={e => setActiveTab(e.key)}
-        >
-          {user ? (
-            <>
-              <Menu.Item key="accounts">Connected Accounts</Menu.Item>
-              <Menu.Item key="events">Events</Menu.Item>
-              <Menu.Item key="hubspot">Hubspot</Menu.Item>
-              <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
-              <Menu.Item key="links">Scheduling Links</Menu.Item>
-              <Menu.Item key="meetings">Meetings</Menu.Item>
-            </>
-          ) : (
-            <Menu.Item key="public-links">Advisors Scheduling Links</Menu.Item>
-          )}
-        </Menu>
-      </Layout.Header>
-      <Layout.Content style={{ padding: '50px' }}>
-        <div className="site-layout-content" style={{ textAlign: 'center' }}>
-          <Title>Welcome to the Advisor Scheduling Tool</Title>
-          {user ? (
-            <>
-              <p>Logged in as: {user.name} ({user.email})</p>
-              {activeTab === 'accounts' && (
-                <>
-                  <div style={{ margin: '24px 0' }}>
-                    <Button type="primary" onClick={handleConnectGoogleAccount}>
-                      Connect Another Google Account
-                    </Button>
-                  </div>
-                  <Title level={4}>Connected Google Accounts</Title>
-                  <List
-                    bordered
-                    loading={loadingAccounts}
-                    dataSource={connectedAccounts}
-                    renderItem={item => (
-                      <>
-                        <List.Item>
-                          <span>
-                            <b>Google Account ID:</b> {item.google_account_id}
-                          </span>
-                        </List.Item>
-                        <List.Item>
-                          <span>
-                            <b>Email:</b> {item.email}
-                          </span>
-                        </List.Item>
-                      </>
-                    )}
-                    locale={{ emptyText: 'No connected Google accounts.' }}
-                    style={{ maxWidth: 600, margin: '0 auto' }}
-                  />
-                </>
-              )}
-              {activeTab === 'events' && (
-                <>
-                  <CalendarEventsPage />
-                </>
-              )}
-              {activeTab === 'hubspot' && (
-                <div>
-                  <Title level={4}>Hubspot Connection</Title>
-                  {hubspotStatus.loading ? (
-                    <Spin />
-                  ) : hubspotStatus.error ? (
-                    <div style={{ color: 'red' }}>{hubspotStatus.error}</div>
-                  ) : hubspotStatus.connected ? (
-                    <>
-                      <div style={{ color: 'green', margin: '24px 0' }}>
-                        Hubspot Connected!
-                      </div>
-                      <Button danger onClick={async () => {
-                        try {
-                          const response = await api.post('/hubspot/disconnect', {}, { withCredentials: true });
-                          if (response.data.success) {
-                            message.success('Hubspot disconnected');
-                            setHubspotStatus({ loading: false, connected: false, error: null });
-                          } else {
-                            message.error('Failed to disconnect Hubspot');
-                          }
-                        } catch (e) {
-                          message.error('Error disconnecting Hubspot');
-                        }
-                      }}>
-                        Disconnect Hubspot
+    loggingIn ? (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin size="large" tip="Logging you in..." />
+      </div>
+    ) : (
+      <Layout className="layout" style={{ minHeight: '100vh' }}>
+        <Layout.Header>
+          <div style={{ float: 'right' }}>
+            {user ? (
+              <Button onClick={handleLogout} type="primary">
+                Logout
+              </Button>
+            ) : (
+              <GoogleLoginButton />
+            )}
+          </div>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            selectedKeys={[activeTab]}
+            onClick={e => setActiveTab(e.key)}
+          >
+            {user ? (
+              <>
+                <Menu.Item key="accounts">Connected Accounts</Menu.Item>
+                <Menu.Item key="events">Events</Menu.Item>
+                <Menu.Item key="hubspot">Hubspot</Menu.Item>
+                <Menu.Item key="scheduling">Scheduling Windows</Menu.Item>
+                <Menu.Item key="links">Scheduling Links</Menu.Item>
+                <Menu.Item key="meetings">Meetings</Menu.Item>
+              </>
+            ) : (
+              <Menu.Item key="public-links">Advisors Scheduling Links</Menu.Item>
+            )}
+          </Menu>
+        </Layout.Header>
+        <Layout.Content style={{ padding: '50px' }}>
+          <div className="site-layout-content" style={{ textAlign: 'center' }}>
+            <Title>Welcome to the Advisor Scheduling Tool</Title>
+            {user ? (
+              <>
+                <p>Logged in as: {user.name} ({user.email})</p>
+                {activeTab === 'accounts' && (
+                  <>
+                    <div style={{ margin: '24px 0' }}>
+                      <Button type="primary" onClick={handleConnectGoogleAccount}>
+                        Connect Another Google Account
                       </Button>
-                    </>
-                  ) : (
-                    <Button type="primary" onClick={handleConnectHubspot}>
-                      Connect Hubspot
-                    </Button>
-                  )}
-                </div>
-              )}
-              {activeTab === 'scheduling' && (
-                <SchedulingWindowsPage />
-              )}
-              {activeTab === 'links' && (
-                <SchedulingLinksPage />
-              )}
-              {activeTab === 'meetings' && (
-                <MeetingsPage />
-              )}
-            </>
-          ) : (
-            <PublicLinksPage />
-          )}
-        </div>
-      </Layout.Content>
-    </Layout>
+                    </div>
+                    <Title level={4}>Connected Google Accounts</Title>
+                    <List
+                      bordered
+                      loading={loadingAccounts}
+                      dataSource={connectedAccounts}
+                      renderItem={item => (
+                        <>
+                          <List.Item>
+                            <span>
+                              <b>Google Account ID:</b> {item.google_account_id}
+                            </span>
+                          </List.Item>
+                          <List.Item>
+                            <span>
+                              <b>Email:</b> {item.email}
+                            </span>
+                          </List.Item>
+                        </>
+                      )}
+                      locale={{ emptyText: 'No connected Google accounts.' }}
+                      style={{ maxWidth: 600, margin: '0 auto' }}
+                    />
+                  </>
+                )}
+                {activeTab === 'events' && (
+                  <>
+                    <CalendarEventsPage />
+                  </>
+                )}
+                {activeTab === 'hubspot' && (
+                  <div>
+                    <Title level={4}>Hubspot Connection</Title>
+                    {hubspotStatus.loading ? (
+                      <Spin />
+                    ) : hubspotStatus.error ? (
+                      <div style={{ color: 'red' }}>{hubspotStatus.error}</div>
+                    ) : hubspotStatus.connected ? (
+                      <>
+                        <div style={{ color: 'green', margin: '24px 0' }}>
+                          Hubspot Connected!
+                        </div>
+                        <Button danger onClick={async () => {
+                          try {
+                            const response = await api.post('/hubspot/disconnect', {}, { withCredentials: true });
+                            if (response.data.success) {
+                              message.success('Hubspot disconnected');
+                              setHubspotStatus({ loading: false, connected: false, error: null });
+                            } else {
+                              message.error('Failed to disconnect Hubspot');
+                            }
+                          } catch (e) {
+                            message.error('Error disconnecting Hubspot');
+                          }
+                        }}>
+                          Disconnect Hubspot
+                        </Button>
+                      </>
+                    ) : (
+                      <Button type="primary" onClick={handleConnectHubspot}>
+                        Connect Hubspot
+                      </Button>
+                    )}
+                  </div>
+                )}
+                {activeTab === 'scheduling' && (
+                  <SchedulingWindowsPage />
+                )}
+                {activeTab === 'links' && (
+                  <SchedulingLinksPage />
+                )}
+                {activeTab === 'meetings' && (
+                  <MeetingsPage />
+                )}
+              </>
+            ) : (
+              <PublicLinksPage />
+            )}
+          </div>
+        </Layout.Content>
+      </Layout>
+    )
   );
 };
 

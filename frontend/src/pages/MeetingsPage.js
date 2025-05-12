@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Typography, Spin, Alert, Tag, Button, Space } from 'antd';
+import { Table, Typography, Spin, Alert, Tag, Button, Space, Modal } from 'antd';
 import * as api from '../services/api';
 import dayjs from 'dayjs';
 
@@ -12,6 +12,7 @@ const MeetingsPage = () => {
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -33,6 +34,7 @@ const MeetingsPage = () => {
     setDetailLoading(true);
     setDetailError(null);
     setSelectedMeeting(null);
+    setModalVisible(true);
     try {
       const response = await api.get(`/meetings/${record.id}`, { withCredentials: true });
       setSelectedMeeting(response.data);
@@ -41,6 +43,12 @@ const MeetingsPage = () => {
     } finally {
       setDetailLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setSelectedMeeting(null);
+    setDetailError(null);
   };
 
   const columns = [
@@ -65,7 +73,13 @@ const MeetingsPage = () => {
       title: 'LinkedIn',
       dataIndex: 'client_linkedin',
       key: 'client_linkedin',
-      render: (val) => val ? <a href={val} target="_blank" rel="noopener noreferrer">{val}</a> : <Tag color="default">N/A</Tag>,
+      render: (val) => val
+        ? /^https?:\/\//i.test(val)
+          ? (
+            <a href={val} target="_blank" rel="noopener noreferrer">{val}</a>
+          )
+          : <span>{val}</span>
+        : <Tag color="default">N/A</Tag>,
     },
     {
       title: 'Actions',
@@ -95,16 +109,38 @@ const MeetingsPage = () => {
           style={{ marginBottom: 32 }}
         />
       )}
-      {detailLoading && <Spin style={{ display: 'block', margin: '40px auto' }} />}
-      {detailError && <Alert type="error" message={detailError} showIcon style={{ margin: '32px 0' }} />}
-      {selectedMeeting && !detailLoading && !detailError && (
-        <Card title={`Meeting Details`} style={{ marginTop: 32 }}>
+      <Modal
+        open={modalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        title="Meeting Details"
+        width={600}
+      >
+        {detailLoading ? (
+          <Spin style={{ display: 'block', margin: '40px auto' }} />
+        ) : detailError ? (
+          <Alert type="error" message={detailError} showIcon style={{ margin: '32px 0' }} />
+        ) : selectedMeeting && !detailLoading && !detailError && (
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <div>
               <Text strong>Date:</Text> {dayjs(selectedMeeting.start_time).format('YYYY-MM-DD')}<br />
               <Text strong>Time:</Text> {dayjs(selectedMeeting.start_time).format('HH:mm')} - {dayjs(selectedMeeting.end_time).format('HH:mm')}<br />
               <Text strong>Client Email:</Text> {selectedMeeting.client_email}<br />
-              <Text strong>LinkedIn:</Text> {selectedMeeting.client_linkedin ? <a href={selectedMeeting.client_linkedin} target="_blank" rel="noopener noreferrer">{selectedMeeting.client_linkedin}</a> : <Tag color="default">N/A</Tag>}
+              <Text strong>LinkedIn:</Text>{' '}
+              {selectedMeeting.client_linkedin
+                ? /^https?:\/\//i.test(selectedMeeting.client_linkedin)
+                  ? (
+                    <a
+                      href={selectedMeeting.client_linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {selectedMeeting.client_linkedin}
+                    </a>
+                  )
+                  : <span>{selectedMeeting.client_linkedin}</span>
+                : <Tag color="default">N/A</Tag>
+              }
             </div>
             <div>
               <Text strong>Client Answers:</Text>
@@ -127,8 +163,8 @@ const MeetingsPage = () => {
               </div>
             )}
           </Space>
-        </Card>
-      )}
+        )}
+      </Modal>
     </div>
   );
 };
