@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 class SchedulingLinkBase(BaseModel):
-    usage_limit: int = Field(..., ge=1)
+    usage_limit: int = Field(..., ge=0)
     expiration_date: datetime
     meeting_length: int = Field(..., ge=1)
     advance_schedule_days: int = Field(..., ge=0)
