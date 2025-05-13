@@ -8,7 +8,12 @@ def send_email(to_email, subject, body, from_email=EMAIL_FROM):
     msg["From"] = from_email
     msg["To"] = to_email
 
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASS)
-        server.sendmail(from_email, [to_email], msg.as_string()) 
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            print(f"Sending email to {to_email} from {from_email}")
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(from_email, [to_email], msg.as_string())
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        # Optionally, re-raise or handle as needed 

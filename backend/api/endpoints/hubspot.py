@@ -17,18 +17,21 @@ router = APIRouter()
 HUBSPOT_SCOPES = "oauth crm.objects.contacts.read"
 
 @router.get("/hubspot/connect/new")
-async def hubspot_connect_new():
+async def hubspot_connect_new(request: Request):
     """
     Redirect user to Hubspot OAuth authorization URL.
     """
+    session_token = request.cookies.get("session_token") or request.headers.get("X-Session-Token")
+    print(f"session_token: {session_token}")
     params = {
         "client_id": HUBSPOT_CLIENT_ID,
         "redirect_uri": HUBSPOT_REDIRECT_URI,
         "scope": HUBSPOT_SCOPES,
         "response_type": "code",
+        "state": session_token,
     }
     url = "https://app.hubspot.com/oauth/authorize"
-    query = "&".join([f"{k}={v}" for k, v in params.items()])
+    query = "&".join([f"{k}={v}" for k, v in params.items() if v is not None])
     return RedirectResponse(f"{url}?{query}")
 
 @router.get("/hubspot/connect/callback")

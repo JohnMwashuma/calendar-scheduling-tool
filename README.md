@@ -76,7 +76,9 @@ A Calendly-like scheduling tool for advisors to meet with their clients, featuri
 
 2. **Start both frontend and backend:**
    ```bash
-   docker-compose up --build
+   docker compose build --no-cache backend
+   docker compose build --no-cache frontend
+   docker compose up --force-recreate
    ```
 
    - Frontend: [http://localhost:3000](http://localhost:3000)
@@ -101,10 +103,10 @@ A Calendly-like scheduling tool for advisors to meet with their clients, featuri
 | `ALLOWED_ORIGINS`             | Comma-separated list of allowed origins for CORS (e.g., `http://localhost:3000`).            |
 | `GOOGLE_CLIENT_ID`            | OAuth client ID for Google integration (login and calendar access).                          |
 | `GOOGLE_CLIENT_SECRET`        | OAuth client secret for Google integration.                                                  |
-| `GOOGLE_REDIRECT_URI`        | OAuth client redirect uri for Google integration.                                                  |
+| `GOOGLE_REDIRECT_URI`        | OAuth client redirect uri for Google integration. (e.g., `http://localhost:8000/api/auth/google/callback`)                                                  |
 | `HUBSPOT_CLIENT_ID`           | OAuth client ID for Hubspot CRM integration.                                                 |
 | `HUBSPOT_CLIENT_SECRET`       | OAuth client secret for Hubspot CRM integration.                                             |
-| `HUBSPOT_REDIRECT_URI`       | OAuth client redirect uri for Hubspot CRM integration.                                             |
+| `HUBSPOT_REDIRECT_URI`       | OAuth client redirect uri for Hubspot CRM integration. (e.g. `http://localhost:8000/api/hubspot/connect/callback`)                                             |
 | `OPENAI_API_KEY`              | API key for OpenAI, used for AI-powered summarization and enrichment.                        |
 | `SMTP_HOST`                  | SMTP server host for sending notification emails.                                            |
 | `SMTP_PORT`                  | SMTP server port.                                                                            |

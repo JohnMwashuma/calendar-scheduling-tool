@@ -6,7 +6,9 @@ from crud.session import get_session_by_token
 from datetime import datetime
 
 async def get_current_user(request: Request, db: Session = Depends(get_db)):
-    session_token = request.cookies.get("session_token")
+    state = request.query_params.get("state")
+    session_token = state or request.cookies.get("session_token")
+    print(f"state: {state}, session_token: {session_token}")
     if not session_token:
         # Try to get from custom header if not in cookies
         session_token = request.headers.get("X-Session-Token")
@@ -14,6 +16,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     session = get_session_by_token(db, session_token=session_token)
+    print(f"session: {session}")
     if not session or session.expires_at < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Invalid session")
 

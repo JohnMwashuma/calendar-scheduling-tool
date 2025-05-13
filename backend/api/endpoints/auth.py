@@ -151,8 +151,10 @@ async def get_me(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/calendars/connect/new")
 async def connect_new_google_calendar(request: Request):
-    redirect_uri = request.url_for('google_connect_callback')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    session_token = request.cookies.get("session_token") or request.headers.get("X-Session-Token")
+    print(f"session_token: {session_token}")
+    redirect_uri = str(request.url_for('google_connect_callback'))
+    return await oauth.google.authorize_redirect(request, redirect_uri, state=session_token)
 
 @router.get("/calendars/connect/callback", name="google_connect_callback")
 async def google_connect_callback(
